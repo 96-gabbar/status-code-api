@@ -1,0 +1,217 @@
+openapi: 3.1.0
+info:
+  title: Trade Exception Management API
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      responses:
+        '200':
+          description: Process health
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/v1/exceptions:
+    post:
+      summary: Create an exception
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateExceptionRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    get:
+      summary: List, filter, and paginate exceptions
+      parameters:
+        - {$ref: '#/components/parameters/Status'}
+        - {$ref: '#/components/parameters/Severity'}
+        - {$ref: '#/components/parameters/Portfolio'}
+        - {$ref: '#/components/parameters/Type'}
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Offset'}
+      responses:
+        '200':
+          description: Matching exceptions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExceptionListResponse'
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/exceptions/{exception_id}:
+    parameters:
+      - {$ref: '#/components/parameters/ExceptionId'}
+    get:
+      responses:
+        '200':
+          description: Exception
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExceptionResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    patch:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdateExceptionRequest'}
+      responses:
+        '200':
+          description: Updated exception
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExceptionResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/exceptions/{exception_id}/assign:
+    post:
+      parameters:
+        - {$ref: '#/components/parameters/ExceptionId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AssignExceptionRequest'}
+      responses:
+        '200':
+          description: Assigned
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExceptionResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/exceptions/{exception_id}/resolve:
+    post:
+      parameters:
+        - {$ref: '#/components/parameters/ExceptionId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ResolveExceptionRequest'}
+      responses:
+        '200':
+          description: Resolved
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExceptionResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/exceptions/{exception_id}/close:
+    post:
+      parameters:
+        - {$ref: '#/components/parameters/ExceptionId'}
+      responses:
+        '200':
+          description: Closed
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ExceptionResponse'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+components:
+  parameters:
+    ExceptionId: {name: exception_id, in: path, required: true, schema: {type: string, pattern: '^EXC-[0-9]+$'}}
+    Status: {name: status, in: query, schema: {type: string, enum: [OPEN, INVESTIGATING, RESOLVED, CLOSED]}}
+    Severity: {name: severity, in: query, schema: {type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL]}}
+    Portfolio: {name: portfolio_id, in: query, schema: {type: string, minLength: 1, maxLength: 64}}
+    Type: {name: type, in: query, schema: {type: string}}
+    Limit: {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+    Offset: {name: offset, in: query, schema: {type: integer, minimum: 0, default: 0}}
+  responses:
+    ValidationError: {description: Validation error, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+    NotFound: {description: Missing exception, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+    Conflict: {description: Invalid state transition, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+    InternalError: {description: Unexpected failure, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+  schemas:
+    CreateExceptionRequest:
+      type: object
+      required: [portfolio_id, transaction_id, type, severity, description]
+      additionalProperties: false
+      properties:
+        portfolio_id: {type: string, minLength: 1, maxLength: 64}
+        transaction_id: {type: string, minLength: 1, maxLength: 64}
+        type: {type: string}
+        severity: {type: string}
+        description: {type: string, minLength: 1, maxLength: 2000}
+    UpdateExceptionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        severity: {type: string}
+        description: {type: string, minLength: 1, maxLength: 2000}
+    AssignExceptionRequest:
+      type: object
+      required: [assignee]
+      additionalProperties: false
+      properties: {assignee: {type: string, minLength: 1, maxLength: 100}}
+    ResolveExceptionRequest:
+      type: object
+      required: [resolution_code, resolution_notes]
+      additionalProperties: false
+      properties:
+        resolution_code: {type: string, minLength: 1, maxLength: 100}
+        resolution_notes: {type: string, minLength: 1, maxLength: 2000}
+    ExceptionResponse:
+      type: object
+      required: [exception_id, portfolio_id, transaction_id, type, severity, status, description, assigned_to, created_at, updated_at, resolution_code, resolution_notes]
+      properties:
+        exception_id: {type: string}
+        portfolio_id: {type: string}
+        transaction_id: {type: string}
+        type: {type: string}
+        severity: {type: string}
+        status: {type: string}
+        description: {type: string}
+        assigned_to: {type: string, nullable: true}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+        resolution_code: {type: string, nullable: true}
+        resolution_notes: {type: string, nullable: true}
+    ExceptionListResponse:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/ExceptionResponse'}}
+        total: {type: integer}
+        limit: {type: integer}
+        offset: {type: integer}
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: {type: string}
+        service: {type: string}
+        version: {type: string}
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: {type: string}
+            message: {type: string}
+            details: {type: array, items: {type: object}}
