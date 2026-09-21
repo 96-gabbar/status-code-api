@@ -77,7 +77,13 @@ async def internal_exception_handler(_: Request, __: Exception) -> JSONResponse:
 
 @app.get("/examples/item")
 def get_existing_item() -> dict[str, Any]:
-    return app.state.items[1]
+    item = app.state.items.get(1)
+    if item is None:
+        raise HTTPException(
+            status_code=404,
+            detail=error_body("ITEM_NOT_FOUND", "Item not found"),
+        )
+    return item
 
 
 @app.get("/examples/items/{item_id:int}")

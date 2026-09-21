@@ -1,13 +1,18 @@
 """Contract tests for the Week 1 validation API."""
 
-import sys
+import importlib.util
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-sys.path.insert(0, str(Path(__file__).parent))
-from main import app  # noqa: E402
+module_spec = importlib.util.spec_from_file_location(
+    "validation_api_main", Path(__file__).with_name("main.py")
+)
+assert module_spec and module_spec.loader
+module = importlib.util.module_from_spec(module_spec)
+module_spec.loader.exec_module(module)
+app = module.app
 
 
 client = TestClient(app)

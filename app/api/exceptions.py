@@ -8,6 +8,7 @@ from app.models.exception import ExceptionType, Severity, Status
 from app.schemas.exception import (
     AssignExceptionRequest,
     CreateExceptionRequest,
+    ErrorResponse,
     ExceptionListResponse,
     ExceptionResponse,
     ResolveExceptionRequest,
@@ -16,13 +17,22 @@ from app.schemas.exception import (
 from app.services.exception_service import ExceptionService
 
 router = APIRouter(prefix="/api/v1/exceptions", tags=["exceptions"])
+VALIDATION_RESPONSE = {"model": ErrorResponse, "description": "Validation error"}
+NOT_FOUND_RESPONSE = {"model": ErrorResponse, "description": "Exception not found"}
+CONFLICT_RESPONSE = {"model": ErrorResponse, "description": "Invalid state transition"}
+INTERNAL_RESPONSE = {"model": ErrorResponse, "description": "Unexpected server error"}
 
 
 def get_service(request: Request) -> ExceptionService:
     return request.app.state.exception_service
 
 
-@router.post("", response_model=ExceptionResponse, status_code=201)
+@router.post(
+    "",
+    response_model=ExceptionResponse,
+    status_code=201,
+    responses={422: VALIDATION_RESPONSE, 500: INTERNAL_RESPONSE},
+)
 def create_exception(
     payload: CreateExceptionRequest, service: ExceptionService = Depends(get_service)
 ) -> JSONResponse:
@@ -32,7 +42,15 @@ def create_exception(
     return response
 
 
-@router.get("/{exception_id}", response_model=ExceptionResponse)
+@router.get(
+    "/{exception_id}",
+    response_model=ExceptionResponse,
+    responses={
+        404: NOT_FOUND_RESPONSE,
+        422: VALIDATION_RESPONSE,
+        500: INTERNAL_RESPONSE,
+    },
+)
 def get_exception(exception_id: str, service: ExceptionService = Depends(get_service)) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
@@ -43,7 +61,11 @@ def get_exception(exception_id: str, service: ExceptionService = Depends(get_ser
     return ExceptionResponse.model_validate(service.get(exception_id))
 
 
-@router.get("", response_model=ExceptionListResponse)
+@router.get(
+    "",
+    response_model=ExceptionListResponse,
+    responses={422: VALIDATION_RESPONSE, 500: INTERNAL_RESPONSE},
+)
 def list_exceptions(
     request: Request,
     status: Optional[Status] = None,
@@ -82,7 +104,15 @@ def list_exceptions(
     )
 
 
-@router.patch("/{exception_id}", response_model=ExceptionResponse)
+@router.patch(
+    "/{exception_id}",
+    response_model=ExceptionResponse,
+    responses={
+        404: NOT_FOUND_RESPONSE,
+        422: VALIDATION_RESPONSE,
+        500: INTERNAL_RESPONSE,
+    },
+)
 def update_exception(
     exception_id: str,
     payload: UpdateExceptionRequest,
@@ -97,7 +127,16 @@ def update_exception(
     return ExceptionResponse.model_validate(service.update(exception_id, payload))
 
 
-@router.post("/{exception_id}/assign", response_model=ExceptionResponse)
+@router.post(
+    "/{exception_id}/assign",
+    response_model=ExceptionResponse,
+    responses={
+        404: NOT_FOUND_RESPONSE,
+        409: CONFLICT_RESPONSE,
+        422: VALIDATION_RESPONSE,
+        500: INTERNAL_RESPONSE,
+    },
+)
 def assign_exception(
     exception_id: str,
     payload: AssignExceptionRequest,
@@ -112,7 +151,16 @@ def assign_exception(
     return ExceptionResponse.model_validate(service.assign(exception_id, payload))
 
 
-@router.post("/{exception_id}/resolve", response_model=ExceptionResponse)
+@router.post(
+    "/{exception_id}/resolve",
+    response_model=ExceptionResponse,
+    responses={
+        404: NOT_FOUND_RESPONSE,
+        409: CONFLICT_RESPONSE,
+        422: VALIDATION_RESPONSE,
+        500: INTERNAL_RESPONSE,
+    },
+)
 def resolve_exception(
     exception_id: str,
     payload: ResolveExceptionRequest,
@@ -127,7 +175,16 @@ def resolve_exception(
     return ExceptionResponse.model_validate(service.resolve(exception_id, payload))
 
 
-@router.post("/{exception_id}/close", response_model=ExceptionResponse)
+@router.post(
+    "/{exception_id}/close",
+    response_model=ExceptionResponse,
+    responses={
+        404: NOT_FOUND_RESPONSE,
+        409: CONFLICT_RESPONSE,
+        422: VALIDATION_RESPONSE,
+        500: INTERNAL_RESPONSE,
+    },
+)
 def close_exception(
     exception_id: str, service: ExceptionService = Depends(get_service)
 ) -> ExceptionResponse:

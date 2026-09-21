@@ -25,9 +25,12 @@ class CreateExceptionRequest(BaseModel):
 
 
 class UpdateExceptionRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    severity: Optional[Severity] = None
-    description: Optional[str] = Field(default=None, min_length=1, max_length=2000)
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={"minProperties": 1},
+    )
+    severity: Severity = None
+    description: str = Field(default=None, min_length=1, max_length=2000)
 
     @field_validator("description", mode="before")
     @classmethod

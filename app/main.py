@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi import HTTPException
 
-from app.api.exceptions import router
+from app.api.exceptions import INTERNAL_RESPONSE, router
 from app.errors.handlers import (
     conflict_handler,
     http_exception_handler,
@@ -27,7 +27,11 @@ def create_app() -> FastAPI:
     app.add_exception_handler(InvalidStateTransitionError, conflict_handler)
     app.add_exception_handler(Exception, internal_handler)
 
-    @app.get("/health", response_model=HealthResponse)
+    @app.get(
+        "/health",
+        response_model=HealthResponse,
+        responses={500: INTERNAL_RESPONSE},
+    )
     def health() -> HealthResponse:
         return HealthResponse(
             status="healthy", service="trade-exception-service", version="1.0.0"

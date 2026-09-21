@@ -36,6 +36,17 @@ def test_delete_existing_item_returns_empty_204() -> None:
     assert response.content == b""
 
 
+def test_deleted_item_is_not_available_from_fixed_item_route() -> None:
+    assert client.delete("/examples/items/1").status_code == 204
+
+    response = client.get("/examples/item")
+
+    assert response.status_code == 404
+    assert response.json() == {
+        "error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}
+    }
+
+
 def test_unsupported_command_returns_400() -> None:
     response = client.post("/examples/commands", json={"command": "UNSUPPORTED"})
 
