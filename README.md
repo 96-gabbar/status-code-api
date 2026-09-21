@@ -77,10 +77,10 @@ Run each mini-API from its own directory and use a different port if the
 flagship service is already running:
 
 ```bash
-cd exercises/status-code-api
-../../.venv/bin/python -m uvicorn main:app --reload --port 8001
+cd /path/to/status-code-api
+.venv/bin/python -m uvicorn main:app --reload --port 8001
 
-cd ../validation-api
+cd exercises/validation-api
 ../../.venv/bin/python -m uvicorn main:app --reload --port 8002
 
 cd ../pagination-api

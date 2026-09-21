@@ -12,6 +12,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
   /api/v1/exceptions:
     post:
       summary: Create an exception
@@ -185,11 +187,11 @@ components:
         severity: {type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL]}
         status: {type: string, enum: [OPEN, INVESTIGATING, RESOLVED, CLOSED]}
         description: {type: string}
-        assigned_to: {type: string, nullable: true}
+        assigned_to: {type: [string, "null"]}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}
-        resolution_code: {type: string, nullable: true}
-        resolution_notes: {type: string, nullable: true}
+        resolution_code: {type: [string, "null"]}
+        resolution_notes: {type: [string, "null"]}
     ExceptionListResponse:
       type: object
       required: [items, total, limit, offset]
