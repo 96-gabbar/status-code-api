@@ -1,0 +1,920 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Trade Exception Management API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/exceptions": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Create Exception",
+        "operationId": "create_exception_api_v1_exceptions_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExceptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "List Exceptions",
+        "operationId": "list_exceptions_api_v1_exceptions_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Status"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Severity"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "portfolio_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Portfolio Id"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ExceptionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exceptions/{exception_id}": {
+      "get": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Get Exception",
+        "operationId": "get_exception_api_v1_exceptions__exception_id__get",
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exception Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exception not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Update Exception",
+        "operationId": "update_exception_api_v1_exceptions__exception_id__patch",
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exception Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateExceptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exception not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exceptions/{exception_id}/assign": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Assign Exception",
+        "operationId": "assign_exception_api_v1_exceptions__exception_id__assign_post",
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exception Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignExceptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exception not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid state transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exceptions/{exception_id}/resolve": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Resolve Exception",
+        "operationId": "resolve_exception_api_v1_exceptions__exception_id__resolve_post",
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exception Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveExceptionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exception not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid state transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/exceptions/{exception_id}/close": {
+      "post": {
+        "tags": [
+          "exceptions"
+        ],
+        "summary": "Close Exception",
+        "operationId": "close_exception_api_v1_exceptions__exception_id__close_post",
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Exception Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExceptionResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Exception not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Invalid state transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssignExceptionRequest": {
+        "properties": {
+          "assignee": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Assignee"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "assignee"
+        ],
+        "title": "AssignExceptionRequest"
+      },
+      "CreateExceptionRequest": {
+        "properties": {
+          "portfolio_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Portfolio Id"
+          },
+          "transaction_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Transaction Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ExceptionType"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "portfolio_id",
+          "transaction_id",
+          "type",
+          "severity",
+          "description"
+        ],
+        "title": "CreateExceptionRequest"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ErrorDetail"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "message"
+        ],
+        "title": "ErrorDetail"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse"
+      },
+      "ExceptionListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ExceptionResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ],
+        "title": "ExceptionListResponse"
+      },
+      "ExceptionResponse": {
+        "properties": {
+          "exception_id": {
+            "type": "string",
+            "title": "Exception Id"
+          },
+          "portfolio_id": {
+            "type": "string",
+            "title": "Portfolio Id"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ExceptionType"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "assigned_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned To"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "resolution_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Code"
+          },
+          "resolution_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exception_id",
+          "portfolio_id",
+          "transaction_id",
+          "type",
+          "severity",
+          "status",
+          "description",
+          "assigned_to",
+          "created_at",
+          "updated_at",
+          "resolution_code",
+          "resolution_notes"
+        ],
+        "title": "ExceptionResponse"
+      },
+      "ExceptionType": {
+        "type": "string",
+        "enum": [
+          "SETTLEMENT_MISMATCH",
+          "MISSING_REFERENCE_DATA",
+          "POSITION_MISMATCH",
+          "PRICE_VARIANCE",
+          "CASH_BREAK",
+          "OTHER"
+        ],
+        "title": "ExceptionType"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "version"
+        ],
+        "title": "HealthResponse"
+      },
+      "ResolveExceptionRequest": {
+        "properties": {
+          "resolution_code": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Resolution Code"
+          },
+          "resolution_notes": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Resolution Notes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "resolution_code",
+          "resolution_notes"
+        ],
+        "title": "ResolveExceptionRequest"
+      },
+      "Severity": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "title": "Severity"
+      },
+      "Status": {
+        "type": "string",
+        "enum": [
+          "OPEN",
+          "INVESTIGATING",
+          "RESOLVED",
+          "CLOSED"
+        ],
+        "title": "Status"
+      },
+      "UpdateExceptionRequest": {
+        "properties": {
+          "severity": {
+            "$ref": "#/components/schemas/Severity"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Description"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "minProperties": 1,
+        "title": "UpdateExceptionRequest"
+      }
+    }
+  }
+}

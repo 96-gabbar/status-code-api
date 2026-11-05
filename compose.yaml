@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: status_code_api
+      POSTGRES_USER: status_code_api
+      POSTGRES_PASSWORD: status_code_api
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U status_code_api -d status_code_api"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:55432:5432"
+
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment: &application-environment
+      STATUS_CODE_API_ENVIRONMENT: development
+      STATUS_CODE_API_REPOSITORY_BACKEND: postgres
+      DATABASE_URL: postgresql+psycopg://status_code_api:status_code_api@db:5432/status_code_api
+      STATUS_CODE_API_LOG_LEVEL: INFO
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build: .
+    environment: *application-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "scripts/check_container_health.py"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  postgres-data:

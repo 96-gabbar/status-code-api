@@ -1,0 +1,4 @@
+........................................................................ [ 74%]
+.........................                                                [100%]
+- generated xml file: /Users/ashutosh/projects/status-code-api/evidence/openapi-full-test-results.xml -
+97 passed in 0.56s

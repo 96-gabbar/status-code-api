@@ -1,7 +1,7 @@
-import pytest
 import importlib.util
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 module_spec = importlib.util.spec_from_file_location(

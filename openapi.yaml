@@ -135,10 +135,10 @@ paths:
 components:
   parameters:
     ExceptionId: {name: exception_id, in: path, required: true, schema: {type: string, pattern: '^EXC-[0-9]+$'}}
-    Status: {name: status, in: query, schema: {type: string, enum: [OPEN, INVESTIGATING, RESOLVED, CLOSED]}}
-    Severity: {name: severity, in: query, schema: {type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL]}}
-    Portfolio: {name: portfolio_id, in: query, schema: {type: string, minLength: 1, maxLength: 64}}
-    Type: {name: type, in: query, schema: {type: string, enum: [SETTLEMENT_MISMATCH, MISSING_REFERENCE_DATA, POSITION_MISMATCH, PRICE_VARIANCE, CASH_BREAK, OTHER]}}
+    Status: {name: status, in: query, schema: {anyOf: [{type: string, enum: [OPEN, INVESTIGATING, RESOLVED, CLOSED]}, {type: "null"}]}}
+    Severity: {name: severity, in: query, schema: {anyOf: [{type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL]}, {type: "null"}]}}
+    Portfolio: {name: portfolio_id, in: query, schema: {anyOf: [{type: string, minLength: 1, maxLength: 64}, {type: "null"}]}}
+    Type: {name: type, in: query, schema: {anyOf: [{type: string, enum: [SETTLEMENT_MISMATCH, MISSING_REFERENCE_DATA, POSITION_MISMATCH, PRICE_VARIANCE, CASH_BREAK, OTHER]}, {type: "null"}]}}
     Limit: {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
     Offset: {name: offset, in: query, schema: {type: integer, minimum: 0, default: 0}}
   responses:
@@ -217,4 +217,13 @@ components:
           properties:
             code: {type: string}
             message: {type: string}
-            details: {type: array, items: {type: object}}
+            details:
+              anyOf:
+                - type: array
+                  items:
+                    type: object
+                    required: [field, message]
+                    properties:
+                      field: {type: string}
+                      message: {type: string}
+                - type: "null"

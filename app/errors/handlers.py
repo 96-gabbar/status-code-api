@@ -33,12 +33,13 @@ async def validation_handler(_: Request, exc: RequestValidationError) -> JSONRes
 
 async def http_exception_handler(_: Request, exc: HTTPException) -> JSONResponse:
     if exc.status_code == 422:
-        if isinstance(exc.detail, dict):
-            field = str(exc.detail.get("field", "request"))
-            message = str(exc.detail.get("message", "Invalid value"))
+        detail: Any = exc.detail
+        if isinstance(detail, dict):
+            field = str(detail.get("field", "request"))
+            message = str(detail.get("message", "Invalid value"))
         else:
             field = "request"
-            message = str(exc.detail)
+            message = str(detail)
         return JSONResponse(
             status_code=422,
             content=error_body(

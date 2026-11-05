@@ -7,6 +7,11 @@ The tested environment uses **Python 3.9**. The commands below use the
 repository-local virtual environment, so they do not depend on a globally
 activated Python installation.
 
+Week 2 adds an optional PostgreSQL repository, versioned Alembic migrations,
+Docker packaging, structured request logs, readiness checks, and CI while
+preserving the Week 1 HTTP contract. In-memory storage remains the default for
+fast local development.
+
 ## Setup
 
 ```bash
@@ -26,6 +31,18 @@ curl http://127.0.0.1:8000/health
 
 The API supports create, retrieve, filter/list, PATCH, assign, resolve, and
 close operations under `/api/v1/exceptions`.
+
+### Run with PostgreSQL
+
+The canonical PostgreSQL workflow uses Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The stack starts PostgreSQL, runs migrations in a one-shot service, and then
+starts the API. See `docs/week2/local-operations.md` for external PostgreSQL,
+migration, readiness, reset, and troubleshooting commands.
 
 ### Example workflow
 
@@ -69,6 +86,16 @@ curl -i -X POST http://127.0.0.1:8000/api/v1/exceptions/EXC-10001/close
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/python -m pytest --junitxml=evidence/test-results.xml
+```
+
+PostgreSQL integration tests run when `TEST_DATABASE_URL` points to a migrated,
+disposable test database; otherwise they are explicitly skipped.
+
+```bash
+.venv/bin/ruff check .
+.venv/bin/ruff format --check .
+.venv/bin/mypy app scripts
+.venv/bin/python scripts/validate_openapi.py
 ```
 
 ## Mini-APIs

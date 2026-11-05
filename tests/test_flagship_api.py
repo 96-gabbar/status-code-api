@@ -7,7 +7,6 @@ from app.main import app
 from app.models.exception import Status
 from app.services.state_machine import ExceptionStateMachine, InvalidStateTransitionError
 
-
 client = TestClient(app)
 
 
@@ -144,7 +143,9 @@ def test_list_rejects_invalid_query(query: dict[str, object]) -> None:
 
 def test_patch_updates_only_allowed_fields() -> None:
     item = create()
-    response = client.patch(f"/api/v1/exceptions/{item['exception_id']}", json={"severity": "CRITICAL"})
+    response = client.patch(
+        f"/api/v1/exceptions/{item['exception_id']}", json={"severity": "CRITICAL"}
+    )
     assert response.status_code == 200
     assert response.json()["severity"] == "CRITICAL"
     assert response.json()["description"] == item["description"]
@@ -158,7 +159,9 @@ def test_patch_rejects_null() -> None:
 
 def test_patch_rejects_immutable_field() -> None:
     item = create()
-    response = client.patch(f"/api/v1/exceptions/{item['exception_id']}", json={"status": "RESOLVED"})
+    response = client.patch(
+        f"/api/v1/exceptions/{item['exception_id']}", json={"status": "RESOLVED"}
+    )
     assert response.status_code == 422
 
 
@@ -175,7 +178,9 @@ def test_patch_missing_item_does_not_mutate() -> None:
 
 def test_assign_transitions_and_stores_assignee() -> None:
     item = create()
-    response = client.post(f"/api/v1/exceptions/{item['exception_id']}/assign", json={"assignee": " ops "})
+    response = client.post(
+        f"/api/v1/exceptions/{item['exception_id']}/assign", json={"assignee": " ops "}
+    )
     assert response.status_code == 200
     assert response.json()["status"] == "INVESTIGATING"
     assert response.json()["assigned_to"] == "ops"
@@ -192,7 +197,9 @@ def test_assign_rejects_repeat_and_preserves_state() -> None:
 
 def test_assign_rejects_empty_assignee() -> None:
     item = create()
-    response = client.post(f"/api/v1/exceptions/{item['exception_id']}/assign", json={"assignee": " "})
+    response = client.post(
+        f"/api/v1/exceptions/{item['exception_id']}/assign", json={"assignee": " "}
+    )
     assert response.status_code == 422
 
 
@@ -218,7 +225,9 @@ def test_resolve_stores_details() -> None:
 
 def test_resolve_requires_both_fields() -> None:
     item = create()
-    response = client.post(f"/api/v1/exceptions/{item['exception_id']}/resolve", json={"resolution_code": "FIXED"})
+    response = client.post(
+        f"/api/v1/exceptions/{item['exception_id']}/resolve", json={"resolution_code": "FIXED"}
+    )
     assert response.status_code == 422
 
 
@@ -252,12 +261,17 @@ def test_state_machine_all_allowed(status: Status, action: str, expected: Status
 
 @pytest.mark.parametrize(
     ("status", "action"),
-    [(status, action) for status in Status for action in ("assign", "resolve", "close")
-     if (status, action) not in {
-         (Status.OPEN, "assign"),
-         (Status.INVESTIGATING, "resolve"),
-         (Status.RESOLVED, "close"),
-     }],
+    [
+        (status, action)
+        for status in Status
+        for action in ("assign", "resolve", "close")
+        if (status, action)
+        not in {
+            (Status.OPEN, "assign"),
+            (Status.INVESTIGATING, "resolve"),
+            (Status.RESOLVED, "close"),
+        }
+    ],
 )
 def test_state_machine_rejects_invalid_transitions(status: Status, action: str) -> None:
     with pytest.raises(InvalidStateTransitionError):

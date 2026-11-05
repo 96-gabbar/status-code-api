@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.exception import ExceptionType, Severity, Status
 
@@ -18,7 +18,7 @@ class CreateExceptionRequest(BaseModel):
 
     @field_validator("portfolio_id", "transaction_id", "description", mode="before")
     @classmethod
-    def trim_strings(cls, value: str) -> str:
+    def trim_strings(cls, value: object) -> object:
         if not isinstance(value, str):
             return value
         return value.strip()
@@ -29,12 +29,19 @@ class UpdateExceptionRequest(BaseModel):
         extra="forbid",
         json_schema_extra={"minProperties": 1},
     )
-    severity: Severity = None
-    description: str = Field(default=None, min_length=1, max_length=2000)
+    # Pydantic uses a None default to make the field omittable, while model_post_init
+    # rejects an explicitly supplied null. The non-Optional annotation preserves that
+    # distinction in generated OpenAPI.
+    severity: Severity = None  # type: ignore[assignment]
+    description: str = Field(  # type: ignore[assignment]
+        default=None,
+        min_length=1,
+        max_length=2000,
+    )
 
     @field_validator("description", mode="before")
     @classmethod
-    def trim_description(cls, value: Optional[str]) -> Optional[str]:
+    def trim_description(cls, value: object) -> object:
         return value.strip() if isinstance(value, str) else value
 
     def model_post_init(self, __context: object) -> None:
@@ -50,7 +57,7 @@ class AssignExceptionRequest(BaseModel):
 
     @field_validator("assignee", mode="before")
     @classmethod
-    def trim_assignee(cls, value: str) -> str:
+    def trim_assignee(cls, value: object) -> object:
         return value.strip() if isinstance(value, str) else value
 
 
@@ -61,7 +68,7 @@ class ResolveExceptionRequest(BaseModel):
 
     @field_validator("resolution_code", "resolution_notes", mode="before")
     @classmethod
-    def trim_resolution(cls, value: str) -> str:
+    def trim_resolution(cls, value: object) -> object:
         return value.strip() if isinstance(value, str) else value
 
 
