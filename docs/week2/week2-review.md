@@ -3,7 +3,7 @@
 **Review date:** 6 November 2026
 **Baseline commit:** `e93330282c8a01bc8e0552e3da98595953c6d5c8` with preserved uncommitted Week 1 work
 **Python:** 3.9.6
-**Status:** Local milestone complete; first GitHub-hosted CI run pending
+**Status:** COMPLETE — all mandatory local and hosted gates passed
 
 ## Delivered
 
@@ -53,6 +53,8 @@ The live run found and fixed two discrepancies:
 1. `alembic/env.py` previously overwrote an explicit programmatic migration URL with the default application URL. The Alembic configuration now leaves the URL empty and applies application settings only when no explicit URL is supplied.
 2. Alembic's logging setup disabled the application request logger during same-process test runs. It now preserves existing loggers.
 
+GitHub Actions run [42120018392](https://github.com/96-gabbar/status-code-api/actions/runs/42120018392) passed on `week2-persistence` for commit `7635a57`. It independently completed dependency installation, Ruff lint/format, mypy, OpenAPI parity, PostgreSQL migration upgrade/downgrade/re-upgrade, and all tests.
+
 ## Tracker outcome
 
 | Item | Result |
@@ -69,9 +71,9 @@ The live run found and fixed two discrepancies:
 | W2-09 readiness | DONE |
 | W2-10 logging | DONE |
 | W2-11 packaging | DONE |
-| W2-12 CI | BLOCKED only on first GitHub-hosted run |
+| W2-12 CI | DONE |
 | W2-13 documentation | DONE |
-| W2-14 final evidence | BLOCKED only on the GitHub-hosted CI run |
+| W2-14 final evidence | DONE |
 
 ## Scorecard
 
@@ -82,13 +84,11 @@ The live run found and fixed two discrepancies:
 | Migration quality | 15 | Offline SQL and live upgrade/downgrade/re-upgrade pass | 15 |
 | Reproducible packaging | 15 | Non-root image, ordered Compose startup, health, restart, and volume checks pass | 15 |
 | Operational foundations | 10 | Configuration, readiness, logging, request IDs, and sanitization pass | 10 |
-| CI and documentation | 15 | Local CI-equivalent gates and docs pass; GitHub execution pending | 12 |
-| **Total** | **100** | Only hosted CI evidence remains | **97** |
+| CI and documentation | 15 | Local gates, documentation, and GitHub Actions run 42120018392 pass | 15 |
+| **Total** | **100** | All mandatory evidence complete | **100** |
 
-The remaining three points require a successful run of `.github/workflows/ci.yml` on GitHub from the committed changes.
+Week 2 meets every mandatory definition-of-done item.
 
-## Remaining verification sequence
+## Next milestone
 
-1. Review the working-tree changes and choose the branch/commit strategy.
-2. Push the committed changes so `.github/workflows/ci.yml` runs on GitHub.
-3. Record the workflow URL and result, then mark W2-12 and W2-14 complete.
+Week 3 begins with the Portfolio Service contract and acceptance criteria, following the accepted C2 scope decision.

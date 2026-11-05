@@ -1,7 +1,7 @@
 # W2-12 CI and Quality Gates
 
 **Implementation date:** 6 November 2026
-**Status:** CI execution pending GitHub run
+**Status:** DONE — GitHub Actions passed
 
 ## Gates
 
@@ -12,7 +12,7 @@
 - Alembic upgrade, downgrade, and re-upgrade against PostgreSQL.
 - Full pytest suite, including PostgreSQL integration tests when `TEST_DATABASE_URL` is configured.
 
-Local quality and regression results are recorded after implementation. GitHub-hosted CI status cannot be represented as passing until the workflow runs in GitHub.
+Local quality and regression results are recorded after implementation. GitHub Actions run [42120018392](https://github.com/96-gabbar/status-code-api/actions/runs/42120018392) completed successfully for commit `7635a57780a74e0dd7e573cbda5266741cd98687` on `week2-persistence`.
 
 ## Local verification
 
@@ -35,4 +35,4 @@ Differences: 0
 144 passed in 1.75s
 ```
 
-The local run used the Compose PostgreSQL instance, so all five integration tests executed. The remaining gate is the first GitHub-hosted workflow run from a committed branch.
+The local run used the Compose PostgreSQL instance, so all five integration tests executed. The hosted run independently passed installation, Ruff lint and formatting, mypy, OpenAPI validation, live migration upgrade/downgrade/re-upgrade, and the complete pytest suite using its PostgreSQL 16 service.

@@ -1,7 +1,7 @@
 # Week 2 Plan: Persistence, Packaging, and Integration Foundations
 
 **Service:** Trade Exception Management API v1
-**Status:** Local milestone complete; GitHub CI run pending
+**Status:** COMPLETE — local and GitHub-hosted gates passed
 **Plan created:** 6 November 2026
 **Week 1 baseline:** 8 OpenAPI operations, 97 tests passing, authored/generated OpenAPI differences: 0
 
@@ -30,7 +30,7 @@ Week 2 is complete only when all mandatory checks pass:
 - [x] Docker Compose starts the API and PostgreSQL, applies migrations through an explicit startup step, and passes a health/readiness smoke test.
 - [x] Configuration is read from environment variables with safe development defaults and no committed secrets.
 - [x] Logs are structured and include timestamp, level, event/message, method, path, status, duration, and a request/correlation identifier.
-- [ ] CI runs lint/static checks selected for this week, unit tests, OpenAPI validation, migration checks, and PostgreSQL integration tests.
+- [x] CI runs lint/static checks selected for this week, unit tests, OpenAPI validation, migration checks, and PostgreSQL integration tests.
 - [x] `docs/week2/week2-review.md` records commands, versions, test counts, evidence, deviations, and remaining gaps.
 
 ## 3. Scope
@@ -115,9 +115,9 @@ Status values: `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, `DONE`.
 | W2-09 | Define liveness and readiness behavior | DONE | W2-08 | Container liveness and exact-revision PostgreSQL readiness pass; see `evidence/week2/w2-09-health-readiness.md` |
 | W2-10 | Add structured logging and request IDs | DONE | W2-08 | `evidence/week2/w2-10-structured-logging.md`; secret-safe JSON request logging; full suite 136 passed |
 | W2-11 | Add Dockerfile and Compose workflow | DONE | W2-05, W2-08, W2-09 | Image build, ordered startup, health, API restart, and volume persistence pass; see `evidence/week2/w2-11-packaging.md` |
-| W2-12 | Add CI pipeline | BLOCKED | W2-05–W2-11 | Workflow and local gates complete; fresh GitHub run pending; see `evidence/week2/w2-12-ci-quality.md` |
+| W2-12 | Add CI pipeline | DONE | W2-05–W2-11 | GitHub Actions run 42120018392 passed; see `evidence/week2/w2-12-ci-quality.md` |
 | W2-13 | Update documentation and decision records | DONE | Continuous | README, database design, operations, decisions, evidence, and review reflect current implementation |
-| W2-14 | Run final regression and produce review evidence | BLOCKED | W2-01–W2-13 | All local and live gates pass; only the fresh GitHub-hosted CI run remains; see `docs/week2/week2-review.md` |
+| W2-14 | Run final regression and produce review evidence | DONE | W2-01–W2-13 | Local, live PostgreSQL, Compose, and GitHub-hosted gates pass; see `docs/week2/week2-review.md` |
 | W2-15 | Specify/build Portfolio Service | DEFERRED TO WEEK 3 | Decision C2 | Separate contract and acceptance criteria approved before code |
 
 ## 7. Execution sequence
@@ -307,4 +307,4 @@ Target: **90/100 or higher**, with every definition-of-done item marked mandator
 
 ## 15. Immediate next action after clarification
 
-Resolve C11, then publish the reviewed branch and record the first GitHub Actions result for W2-12 and W2-14.
+Begin the Week 3 plan with Portfolio Service contract and acceptance criteria before implementation.
