@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 
 from main import app, reset_example_state
 
-
 client = TestClient(app, raise_server_exceptions=False)
 
 
@@ -42,9 +41,7 @@ def test_deleted_item_is_not_available_from_fixed_item_route() -> None:
     response = client.get("/examples/item")
 
     assert response.status_code == 404
-    assert response.json() == {
-        "error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}
-    }
+    assert response.json() == {"error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}}
 
 
 def test_unsupported_command_returns_400() -> None:
@@ -60,9 +57,7 @@ def test_missing_item_returns_404() -> None:
     response = client.get("/examples/items/999")
 
     assert response.status_code == 404
-    assert response.json() == {
-        "error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}
-    }
+    assert response.json() == {"error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}}
 
 
 def test_invalid_transition_returns_409() -> None:
@@ -132,6 +127,4 @@ def test_put_missing_item_returns_404() -> None:
     response = client.put("/examples/items/999", json={"name": "Replacement item"})
 
     assert response.status_code == 404
-    assert response.json() == {
-        "error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}
-    }
+    assert response.json() == {"error": {"code": "ITEM_NOT_FOUND", "message": "Item not found"}}

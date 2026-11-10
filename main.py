@@ -13,7 +13,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-
 app = FastAPI(title="HTTP Status Code Exercise")
 
 

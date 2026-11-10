@@ -1,28 +1,28 @@
 from __future__ import annotations
 
-from app.models.exception import TradeException
+from typing import Protocol
+
+from app.models.exception import Severity, Status, TradeException
 
 
-class ExceptionRepository:
-    def __init__(self) -> None:
-        self._items: dict[str, TradeException] = {}
-        self._next_id = 10001
+class ExceptionRepository(Protocol):
+    """Storage behavior required by the exception service."""
 
-    def create(self, item: TradeException) -> TradeException:
-        self._items[item.exception_id] = item
-        return item
+    def create(self, item: TradeException) -> TradeException: ...
 
-    def get(self, exception_id: str) -> TradeException | None:
-        return self._items.get(exception_id)
+    def get(self, exception_id: str) -> TradeException | None: ...
 
-    def all(self) -> list[TradeException]:
-        return list(self._items.values())
+    def list(
+        self,
+        *,
+        status: Status | None,
+        severity: Severity | None,
+        portfolio_id: str | None,
+        exception_type: str | None,
+        limit: int,
+        offset: int,
+    ) -> tuple[list[TradeException], int]: ...
 
-    def replace(self, item: TradeException) -> TradeException:
-        self._items[item.exception_id] = item
-        return item
+    def replace(self, item: TradeException) -> TradeException: ...
 
-    def next_exception_id(self) -> str:
-        value = f"EXC-{self._next_id}"
-        self._next_id += 1
-        return value
+    def next_exception_id(self) -> str: ...

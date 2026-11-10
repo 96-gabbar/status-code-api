@@ -1,2 +1,6 @@
 .pytest_cache/
 .venv/
+.venv-verify/
+.env
+!.env.example
+.DS_Store

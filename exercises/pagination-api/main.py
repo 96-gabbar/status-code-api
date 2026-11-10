@@ -34,8 +34,7 @@ class ProductPage(BaseModel):
 
 
 PRODUCTS = [
-    Product(product_id=product_id, name=f"Product {product_id}")
-    for product_id in range(1, 101)
+    Product(product_id=product_id, name=f"Product {product_id}") for product_id in range(1, 101)
 ]
 
 

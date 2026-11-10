@@ -6,6 +6,9 @@ from re import fullmatch
 
 from app.models.exception import Severity, Status, TradeException
 from app.repositories.exception_repository import ExceptionRepository
+from app.repositories.in_memory_exception_repository import (
+    InMemoryExceptionRepository,
+)
 from app.schemas.exception import (
     AssignExceptionRequest,
     CreateExceptionRequest,
@@ -21,7 +24,9 @@ class ExceptionNotFoundError(Exception):
 
 class ExceptionService:
     def __init__(self, repository: ExceptionRepository | None = None) -> None:
-        self.repository = repository or ExceptionRepository()
+        self.repository: ExceptionRepository = (
+            repository if repository is not None else InMemoryExceptionRepository()
+        )
         self.state_machine = ExceptionStateMachine()
 
     def _get(self, exception_id: str) -> TradeException:
@@ -66,27 +71,33 @@ class ExceptionService:
         limit: int,
         offset: int,
     ) -> tuple[list[TradeException], int]:
-        items = self.repository.all()
-        if status is not None:
-            items = [item for item in items if item.status == status]
-        if severity is not None:
-            items = [item for item in items if item.severity == severity]
-        if portfolio_id is not None:
-            items = [item for item in items if item.portfolio_id == portfolio_id]
-        if exception_type is not None:
-            items = [item for item in items if item.type.value == exception_type]
-        items.sort(key=lambda item: (item.created_at, int(item.exception_id.removeprefix("EXC-"))))
-        total = len(items)
-        return items[offset : offset + limit], total
+        return self.repository.list(
+            status=status,
+            severity=severity,
+            portfolio_id=portfolio_id,
+            exception_type=exception_type,
+            limit=limit,
+            offset=offset,
+        )
 
     def update(self, exception_id: str, payload: UpdateExceptionRequest) -> TradeException:
         item = self._get(exception_id)
-        changes: dict[str, object] = {}
+        severity = item.severity
+        description = item.description
         if "severity" in payload.model_fields_set:
-            changes["severity"] = payload.severity
+            if payload.severity is None:
+                raise ValueError("PATCH severity cannot be null")
+            severity = payload.severity
         if "description" in payload.model_fields_set:
-            changes["description"] = payload.description
-        updated = replace(item, **changes, updated_at=self._now())
+            if payload.description is None:
+                raise ValueError("PATCH description cannot be null")
+            description = payload.description
+        updated = replace(
+            item,
+            severity=severity,
+            description=description,
+            updated_at=self._now(),
+        )
         return self.repository.replace(updated)
 
     def assign(self, exception_id: str, payload: AssignExceptionRequest) -> TradeException:

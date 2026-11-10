@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional
-from fastapi import APIRouter, Depends, Query, Request
+from typing import Annotated, Optional
+
+from fastapi import APIRouter, Depends, Path, Query, Request
 from fastapi.responses import JSONResponse
 
+from app.dependencies import get_exception_service
 from app.models.exception import ExceptionType, Severity, Status
 from app.schemas.exception import (
     AssignExceptionRequest,
@@ -23,10 +25,6 @@ CONFLICT_RESPONSE = {"model": ErrorResponse, "description": "Invalid state trans
 INTERNAL_RESPONSE = {"model": ErrorResponse, "description": "Unexpected server error"}
 
 
-def get_service(request: Request) -> ExceptionService:
-    return request.app.state.exception_service
-
-
 @router.post(
     "",
     response_model=ExceptionResponse,
@@ -34,10 +32,13 @@ def get_service(request: Request) -> ExceptionService:
     responses={422: VALIDATION_RESPONSE, 500: INTERNAL_RESPONSE},
 )
 def create_exception(
-    payload: CreateExceptionRequest, service: ExceptionService = Depends(get_service)
+    payload: CreateExceptionRequest,
+    service: ExceptionService = Depends(get_exception_service),
 ) -> JSONResponse:
     item = service.create(payload)
-    response = JSONResponse(status_code=201, content=ExceptionResponse.model_validate(item).model_dump(mode="json"))
+    response = JSONResponse(
+        status_code=201, content=ExceptionResponse.model_validate(item).model_dump(mode="json")
+    )
     response.headers["Location"] = f"/api/v1/exceptions/{item.exception_id}"
     return response
 
@@ -51,9 +52,13 @@ def create_exception(
         500: INTERNAL_RESPONSE,
     },
 )
-def get_exception(exception_id: str, service: ExceptionService = Depends(get_service)) -> ExceptionResponse:
+def get_exception(
+    exception_id: Annotated[str, Path(json_schema_extra={"pattern": "^EXC-[0-9]+$"})],
+    service: ExceptionService = Depends(get_exception_service),
+) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=422,
             detail={"field": "path.exception_id", "message": "Invalid exception ID format"},
@@ -74,12 +79,13 @@ def list_exceptions(
     type: Optional[ExceptionType] = None,
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
-    service: ExceptionService = Depends(get_service),
+    service: ExceptionService = Depends(get_exception_service),
 ) -> ExceptionListResponse:
     allowed = {"status", "severity", "portfolio_id", "type", "limit", "offset"}
     unknown = set(request.query_params) - allowed
     if unknown:
         from fastapi import HTTPException
+
         parameter = sorted(unknown)[0]
         raise HTTPException(
             status_code=422,
@@ -114,12 +120,13 @@ def list_exceptions(
     },
 )
 def update_exception(
-    exception_id: str,
+    exception_id: Annotated[str, Path(json_schema_extra={"pattern": "^EXC-[0-9]+$"})],
     payload: UpdateExceptionRequest,
-    service: ExceptionService = Depends(get_service),
+    service: ExceptionService = Depends(get_exception_service),
 ) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=422,
             detail={"field": "path.exception_id", "message": "Invalid exception ID format"},
@@ -138,12 +145,13 @@ def update_exception(
     },
 )
 def assign_exception(
-    exception_id: str,
+    exception_id: Annotated[str, Path(json_schema_extra={"pattern": "^EXC-[0-9]+$"})],
     payload: AssignExceptionRequest,
-    service: ExceptionService = Depends(get_service),
+    service: ExceptionService = Depends(get_exception_service),
 ) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=422,
             detail={"field": "path.exception_id", "message": "Invalid exception ID format"},
@@ -162,12 +170,13 @@ def assign_exception(
     },
 )
 def resolve_exception(
-    exception_id: str,
+    exception_id: Annotated[str, Path(json_schema_extra={"pattern": "^EXC-[0-9]+$"})],
     payload: ResolveExceptionRequest,
-    service: ExceptionService = Depends(get_service),
+    service: ExceptionService = Depends(get_exception_service),
 ) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=422,
             detail={"field": "path.exception_id", "message": "Invalid exception ID format"},
@@ -186,10 +195,12 @@ def resolve_exception(
     },
 )
 def close_exception(
-    exception_id: str, service: ExceptionService = Depends(get_service)
+    exception_id: Annotated[str, Path(json_schema_extra={"pattern": "^EXC-[0-9]+$"})],
+    service: ExceptionService = Depends(get_exception_service),
 ) -> ExceptionResponse:
     if not service.valid_id(exception_id):
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=422,
             detail={"field": "path.exception_id", "message": "Invalid exception ID format"},
