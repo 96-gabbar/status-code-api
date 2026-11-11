@@ -1,0 +1,249 @@
+openapi: 3.1.0
+info:
+  title: Portfolio Service API
+  version: 1.0.0
+  description: Owns portfolio identity, descriptive metadata, and active status.
+paths:
+  /health:
+    get:
+      summary: Check process liveness
+      operationId: getHealth
+      responses:
+        '200':
+          description: Process health
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/HealthResponse'}
+              example: {status: healthy, service: portfolio-service, version: 1.0.0}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/portfolios:
+    post:
+      summary: Create a portfolio
+      operationId: createPortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreatePortfolioRequest'}
+            example:
+              portfolio_id: PORT-201
+              name: Asia Credit Opportunities
+              owner: CREDIT-OPS
+      responses:
+        '201':
+          description: Portfolio created
+          headers:
+            Location:
+              description: Canonical portfolio resource path
+              schema: {type: string}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PortfolioResponse'}
+              examples:
+                portfolio: {$ref: '#/components/examples/Portfolio'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    get:
+      summary: List, filter, and paginate portfolios
+      operationId: listPortfolios
+      description: Results are ordered by created_at descending, then portfolio_id ascending. Total is calculated after filtering and before pagination.
+      parameters:
+        - {$ref: '#/components/parameters/Status'}
+        - {$ref: '#/components/parameters/Owner'}
+        - {$ref: '#/components/parameters/Limit'}
+        - {$ref: '#/components/parameters/Offset'}
+      responses:
+        '200':
+          description: Matching portfolios
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PortfolioListResponse'}
+              example:
+                items:
+                  - portfolio_id: PORT-201
+                    name: Asia Credit Opportunities
+                    owner: CREDIT-OPS
+                    status: ACTIVE
+                    created_at: '2026-11-12T08:00:00Z'
+                    updated_at: '2026-11-12T08:00:00Z'
+                total: 1
+                limit: 20
+                offset: 0
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+  /api/v1/portfolios/{portfolio_id}:
+    parameters:
+      - {$ref: '#/components/parameters/PortfolioId'}
+    get:
+      summary: Get a portfolio
+      operationId: getPortfolio
+      responses:
+        '200':
+          description: Portfolio
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PortfolioResponse'}
+              examples:
+                portfolio: {$ref: '#/components/examples/Portfolio'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+    patch:
+      summary: Update portfolio metadata or status
+      operationId: updatePortfolio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdatePortfolioRequest'}
+            example: {status: INACTIVE}
+      responses:
+        '200':
+          description: Updated portfolio
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PortfolioResponse'}
+              examples:
+                portfolio: {$ref: '#/components/examples/Portfolio'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+        '500': {$ref: '#/components/responses/InternalError'}
+components:
+  parameters:
+    PortfolioId:
+      name: portfolio_id
+      in: path
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 64}
+    Status:
+      name: status
+      in: query
+      schema:
+        anyOf:
+          - {type: string, enum: [ACTIVE, INACTIVE]}
+          - {type: "null"}
+    Owner:
+      name: owner
+      in: query
+      schema:
+        anyOf:
+          - {type: string, minLength: 1, maxLength: 100}
+          - {type: "null"}
+    Limit:
+      name: limit
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 100, default: 20}
+    Offset:
+      name: offset
+      in: query
+      schema: {type: integer, minimum: 0, default: 0}
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorResponse'}
+          example:
+            error:
+              code: VALIDATION_ERROR
+              message: Request validation failed
+              details: [{field: body.name, message: String should have at least 1 character}]
+    NotFound:
+      description: Portfolio does not exist
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorResponse'}
+          example:
+            error: {code: PORTFOLIO_NOT_FOUND, message: Portfolio PORT-999 does not exist}
+    Conflict:
+      description: Portfolio identifier already exists
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorResponse'}
+          example:
+            error: {code: PORTFOLIO_ALREADY_EXISTS, message: Portfolio PORT-201 already exists}
+    InternalError:
+      description: Unexpected failure
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ErrorResponse'}
+          example:
+            error: {code: INTERNAL_ERROR, message: An unexpected error occurred}
+  schemas:
+    CreatePortfolioRequest:
+      type: object
+      required: [portfolio_id, name, owner]
+      additionalProperties: false
+      properties:
+        portfolio_id: {type: string, minLength: 1, maxLength: 64}
+        name: {type: string, minLength: 1, maxLength: 200}
+        owner: {type: string, minLength: 1, maxLength: 100}
+    UpdatePortfolioRequest:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        name: {type: string, minLength: 1, maxLength: 200}
+        owner: {type: string, minLength: 1, maxLength: 100}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+    PortfolioResponse:
+      type: object
+      required: [portfolio_id, name, owner, status, created_at, updated_at]
+      additionalProperties: false
+      properties:
+        portfolio_id: {type: string, minLength: 1, maxLength: 64}
+        name: {type: string, minLength: 1, maxLength: 200}
+        owner: {type: string, minLength: 1, maxLength: 100}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    PortfolioListResponse:
+      type: object
+      required: [items, total, limit, offset]
+      additionalProperties: false
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/PortfolioResponse'}}
+        total: {type: integer, minimum: 0}
+        limit: {type: integer, minimum: 1, maximum: 100}
+        offset: {type: integer, minimum: 0}
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      additionalProperties: false
+      properties:
+        status: {type: string}
+        service: {type: string}
+        version: {type: string}
+    ErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          additionalProperties: false
+          properties:
+            code: {type: string}
+            message: {type: string}
+            details:
+              anyOf:
+                - type: array
+                  items:
+                    type: object
+                    required: [field, message]
+                    additionalProperties: false
+                    properties:
+                      field: {type: string}
+                      message: {type: string}
+                - type: "null"
+  examples:
+    Portfolio:
+      value:
+        portfolio_id: PORT-201
+        name: Asia Credit Opportunities
+        owner: CREDIT-OPS
+        status: ACTIVE
+        created_at: '2026-11-12T08:00:00Z'
+        updated_at: '2026-11-12T08:00:00Z'

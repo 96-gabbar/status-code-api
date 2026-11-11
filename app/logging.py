@@ -13,6 +13,10 @@ EXTRA_FIELDS = (
     "path",
     "status",
     "duration_ms",
+    "dependency",
+    "operation",
+    "outcome",
+    "attempts",
 )
 
 

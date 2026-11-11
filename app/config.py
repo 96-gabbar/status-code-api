@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     )
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
     sql_echo: bool = False
+    portfolio_validation_enabled: bool = False
+    portfolio_service_url: str = "http://portfolio-api:8001"
+    portfolio_connect_timeout_seconds: float = Field(default=0.5, gt=0)
+    portfolio_read_timeout_seconds: float = Field(default=1.0, gt=0)
+    portfolio_retry_count: int = Field(default=1, ge=0, le=1)
 
     @field_validator("log_level", mode="before")
     @classmethod

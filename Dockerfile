@@ -13,11 +13,14 @@ RUN python -m pip install --no-cache-dir -r requirements-prod.txt
 
 COPY --chown=app:app alembic.ini ./
 COPY --chown=app:app alembic ./alembic
+COPY --chown=app:app portfolio_alembic.ini ./
+COPY --chown=app:app portfolio_alembic ./portfolio_alembic
 COPY --chown=app:app app ./app
+COPY --chown=app:app portfolio_app ./portfolio_app
 COPY --chown=app:app scripts ./scripts
 
 USER app
 
-EXPOSE 8000
+EXPOSE 8000 8001
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
