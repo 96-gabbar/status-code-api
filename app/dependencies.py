@@ -19,7 +19,11 @@ def get_exception_service(request: Request) -> Iterator[ExceptionService]:
 
     session = request.app.state.session_factory()
     try:
-        yield ExceptionService(SqlAlchemyExceptionRepository(session))
+        yield ExceptionService(
+            SqlAlchemyExceptionRepository(session),
+            portfolio_gateway=getattr(request.app.state, "portfolio_gateway", None),
+            portfolio_validation_enabled=settings.portfolio_validation_enabled,
+        )
         session.commit()
     except BaseException:
         session.rollback()

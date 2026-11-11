@@ -15,6 +15,11 @@ from app.schemas.exception import (
     ResolveExceptionRequest,
     UpdateExceptionRequest,
 )
+from app.services.portfolio_gateway import (
+    PortfolioGateway,
+    PortfolioInactiveError,
+    PortfolioState,
+)
 from app.services.state_machine import ExceptionStateMachine, InvalidStateTransitionError
 
 
@@ -23,11 +28,19 @@ class ExceptionNotFoundError(Exception):
 
 
 class ExceptionService:
-    def __init__(self, repository: ExceptionRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: ExceptionRepository | None = None,
+        *,
+        portfolio_gateway: PortfolioGateway | None = None,
+        portfolio_validation_enabled: bool = False,
+    ) -> None:
         self.repository: ExceptionRepository = (
             repository if repository is not None else InMemoryExceptionRepository()
         )
         self.state_machine = ExceptionStateMachine()
+        self.portfolio_gateway = portfolio_gateway
+        self.portfolio_validation_enabled = portfolio_validation_enabled
 
     def _get(self, exception_id: str) -> TradeException:
         item = self.repository.get(exception_id)
@@ -39,7 +52,21 @@ class ExceptionService:
     def _now() -> datetime:
         return datetime.now(timezone.utc)
 
-    def create(self, payload: CreateExceptionRequest) -> TradeException:
+    def create(
+        self,
+        payload: CreateExceptionRequest,
+        *,
+        request_id: str | None = None,
+    ) -> TradeException:
+        if self.portfolio_validation_enabled:
+            if self.portfolio_gateway is None:
+                raise RuntimeError("Portfolio validation is enabled without a gateway")
+            portfolio = self.portfolio_gateway.get_portfolio(
+                payload.portfolio_id,
+                request_id=request_id,
+            )
+            if portfolio.status is PortfolioState.INACTIVE:
+                raise PortfolioInactiveError(payload.portfolio_id)
         now = self._now()
         return self.repository.create(
             TradeException(

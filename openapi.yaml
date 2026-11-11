@@ -34,6 +34,8 @@ paths:
           $ref: '#/components/responses/ValidationError'
         '500':
           $ref: '#/components/responses/InternalError'
+        '503':
+          $ref: '#/components/responses/DependencyUnavailable'
     get:
       summary: List, filter, and paginate exceptions
       parameters:
@@ -146,6 +148,7 @@ components:
     NotFound: {description: Missing exception, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
     Conflict: {description: Invalid state transition, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
     InternalError: {description: Unexpected failure, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
+    DependencyUnavailable: {description: Portfolio dependency unavailable, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}
   schemas:
     CreateExceptionRequest:
       type: object

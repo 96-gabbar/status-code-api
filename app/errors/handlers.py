@@ -7,6 +7,11 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.services.exception_service import ExceptionNotFoundError
+from app.services.portfolio_gateway import (
+    PortfolioDependencyUnavailableError,
+    PortfolioInactiveError,
+    PortfolioMissingError,
+)
 from app.services.state_machine import InvalidStateTransitionError
 
 
@@ -65,6 +70,30 @@ async def conflict_handler(_: Request, exc: InvalidStateTransitionError) -> JSON
     return JSONResponse(
         status_code=409,
         content=error_body("INVALID_STATE_TRANSITION", str(exc)),
+    )
+
+
+async def invalid_portfolio_handler(_: Request, exc: PortfolioMissingError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content=error_body("INVALID_PORTFOLIO", f"Portfolio {exc.args[0]} does not exist"),
+    )
+
+
+async def inactive_portfolio_handler(_: Request, exc: PortfolioInactiveError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content=error_body("PORTFOLIO_INACTIVE", f"Portfolio {exc.args[0]} is inactive"),
+    )
+
+
+async def dependency_unavailable_handler(
+    _: Request,
+    __: PortfolioDependencyUnavailableError,
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=503,
+        content=error_body("DEPENDENCY_UNAVAILABLE", "Portfolio Service is unavailable"),
     )
 
 

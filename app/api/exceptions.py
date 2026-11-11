@@ -23,19 +23,21 @@ VALIDATION_RESPONSE = {"model": ErrorResponse, "description": "Validation error"
 NOT_FOUND_RESPONSE = {"model": ErrorResponse, "description": "Exception not found"}
 CONFLICT_RESPONSE = {"model": ErrorResponse, "description": "Invalid state transition"}
 INTERNAL_RESPONSE = {"model": ErrorResponse, "description": "Unexpected server error"}
+DEPENDENCY_RESPONSE = {"model": ErrorResponse, "description": "Portfolio dependency unavailable"}
 
 
 @router.post(
     "",
     response_model=ExceptionResponse,
     status_code=201,
-    responses={422: VALIDATION_RESPONSE, 500: INTERNAL_RESPONSE},
+    responses={422: VALIDATION_RESPONSE, 500: INTERNAL_RESPONSE, 503: DEPENDENCY_RESPONSE},
 )
 def create_exception(
+    request: Request,
     payload: CreateExceptionRequest,
     service: ExceptionService = Depends(get_exception_service),
 ) -> JSONResponse:
-    item = service.create(payload)
+    item = service.create(payload, request_id=request.state.request_id)
     response = JSONResponse(
         status_code=201, content=ExceptionResponse.model_validate(item).model_dump(mode="json")
     )
